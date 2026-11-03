@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1280 520" width="1280" height="520" role="img" aria-labelledby="title desc">
+  <title id="title">exterminator</title>
+  <desc id="desc">A stick-figure exterminator sprays a code bug while its headlamp reveals a whole nest of bugs hiding in the code behind it.</desc>
+  <defs>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="1.4" fill="#E2DCCF"/>
+    </pattern>
+    <linearGradient id="beam" x1="339" y1="0" x2="1216" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ECFCCB" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#D9F99D" stop-opacity="0.7"/>
+    </linearGradient>
+    <clipPath id="beamClip">
+      <path d="M339,210 L1216,150 L1216,390 Z"/>
+    </clipPath>
+    <clipPath id="panelClip">
+      <rect x="772" y="136" width="442" height="300" rx="14"/>
+    </clipPath>
+    <symbol id="bug" viewBox="-26 -28 52 52" overflow="visible">
+      <g stroke="#111" stroke-width="3" stroke-linecap="round" fill="none">
+        <path d="M-9,-3 L-19,-10"/><path d="M-10,3 L-21,3"/><path d="M-9,9 L-19,16"/>
+        <path d="M9,-3 L19,-10"/><path d="M10,3 L21,3"/><path d="M9,9 L19,16"/>
+        <path d="M-4,-16 Q-7,-23 -12,-24" stroke-width="2.5"/><path d="M4,-16 Q7,-23 12,-24" stroke-width="2.5"/>
+      </g>
+      <ellipse cx="0" cy="4" rx="11" ry="14" fill="#111"/>
+      <path d="M0,-6 L0,17" stroke="#5A564E" stroke-width="1.6"/>
+      <circle cx="-5" cy="3" r="2.2" fill="#A3E635"/>
+      <circle cx="5" cy="9" r="2.2" fill="#A3E635"/>
+      <circle cx="0" cy="-12" r="7" fill="#111"/>
+      <circle cx="-3.4" cy="-13" r="3" fill="#fff"/>
+      <circle cx="3.4" cy="-13" r="3" fill="#fff"/>
+      <circle cx="-3.4" cy="-13.6" r="1.4" fill="#111"/>
+      <circle cx="3.4" cy="-13.6" r="1.4" fill="#111"/>
+    </symbol>
+  </defs>
+
+  <!-- card -->
+  <rect width="1280" height="520" rx="28" fill="#F4F1EA"/>
+  <rect width="1280" height="520" rx="28" fill="url(#dots)"/>
+
+  <!-- wordmark -->
+  <text x="64" y="104" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="58" font-weight="800" fill="#111" letter-spacing="-1">exterminator<tspan fill="#84CC16">_</tspan></text>
+  <text x="66" y="144" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="21" fill="#6B6558">fix the bug. then find the nest.</text>
+
+  <!-- code panel (the wall) -->
+  <rect x="780" y="102" width="446" height="346" rx="18" fill="#111"/>
+  <rect x="770" y="92" width="446" height="346" rx="18" fill="#FFFFFF" stroke="#111" stroke-width="5"/>
+  <line x1="770" y1="134" x2="1216" y2="134" stroke="#111" stroke-width="4"/>
+  <circle cx="797" cy="113" r="6.5" fill="#EF4444" stroke="#111" stroke-width="2.5"/>
+  <circle cx="819" cy="113" r="6.5" fill="#F59E0B" stroke="#111" stroke-width="2.5"/>
+  <circle cx="841" cy="113" r="6.5" fill="#A3E635" stroke="#111" stroke-width="2.5"/>
+  <text x="1000" y="119" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" fill="#8A8478">checkout.js</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="12" fill="#BDB7AA" text-anchor="end">
+    <text x="806" y="166">1</text><text x="806" y="190">2</text><text x="806" y="214">3</text>
+    <text x="806" y="238">4</text><text x="806" y="262">5</text><text x="806" y="286">6</text>
+    <text x="806" y="310">7</text><text x="806" y="334">8</text><text x="806" y="358">9</text>
+    <text x="806" y="382">10</text><text x="806" y="406">11</text>
+  </g>
+  <g>
+    <rect x="822" y="157" width="54" height="10" rx="5" fill="#4B4740"/><rect x="884" y="157" width="120" height="10" rx="5" fill="#DDD8CC"/><rect x="1012" y="157" width="36" height="10" rx="5" fill="#A3E635"/>
+    <rect x="846" y="181" width="70" height="10" rx="5" fill="#DDD8CC"/><rect x="924" y="181" width="90" height="10" rx="5" fill="#DDD8CC"/>
+    <rect x="846" y="205" width="40" height="10" rx="5" fill="#4B4740"/><rect x="894" y="205" width="150" height="10" rx="5" fill="#DDD8CC"/><rect x="1052" y="205" width="60" height="10" rx="5" fill="#A3E635"/>
+    <rect x="870" y="229" width="110" height="10" rx="5" fill="#DDD8CC"/><rect x="988" y="229" width="70" height="10" rx="5" fill="#DDD8CC"/>
+    <rect x="870" y="253" width="60" height="10" rx="5" fill="#4B4740"/><rect x="938" y="253" width="140" height="10" rx="5" fill="#DDD8CC"/>
+    <rect x="846" y="277" width="90" height="10" rx="5" fill="#DDD8CC"/><rect x="944" y="277" width="50" height="10" rx="5" fill="#A3E635"/><rect x="1002" y="277" width="80" height="10" rx="5" fill="#DDD8CC"/>
+    <rect x="846" y="301" width="40" height="10" rx="5" fill="#4B4740"/><rect x="894" y="301" width="120" height="10" rx="5" fill="#DDD8CC"/>
+    <rect x="870" y="325" width="140" height="10" rx="5" fill="#DDD8CC"/><rect x="1018" y="325" width="60" height="10" rx="5" fill="#DDD8CC"/>
+    <rect x="846" y="349" width="60" height="10" rx="5" fill="#4B4740"/><rect x="914" y="349" width="100" height="10" rx="5" fill="#DDD8CC"/><rect x="1022" y="349" width="50" height="10" rx="5" fill="#A3E635"/>
+    <rect x="822" y="373" width="30" height="10" rx="5" fill="#4B4740"/>
+    <rect x="822" y="397" width="90" height="10" rx="5" fill="#DDD8CC"/><rect x="920" y="397" width="70" height="10" rx="5" fill="#DDD8CC"/>
+  </g>
+  <!-- error squiggle -->
+  <path d="M870,270 q5,-5 10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0 t10,0" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- headlamp beam -->
+  <path d="M339,210 L1216,150 L1216,390 Z" fill="url(#beam)" opacity="0.75"/>
+
+  <!-- the nest: only visible where the beam lands -->
+  <g clip-path="url(#beamClip)">
+    <g clip-path="url(#panelClip)">
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(856 196) rotate(25) scale(0.8)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(905 240) rotate(20) scale(0.9)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(962 206) rotate(-35) scale(0.8)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(950 298) rotate(150) scale(0.75)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(1010 260) rotate(60) scale(0.95)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(1002 342) rotate(-10) scale(0.8)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(1062 200) rotate(10) scale(0.75)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(1080 302) rotate(-20) scale(0.9)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(1130 244) rotate(95) scale(0.85)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(1158 334) rotate(30) scale(0.8)"/>
+      <use xlink:href="#bug" href="#bug" x="-26" y="-28" width="52" height="52" transform="translate(1176 186) rotate(-60) scale(0.75)"/>
+    </g>
+  </g>
+  <!-- panel border back on top of the beam -->
+  <rect x="770" y="92" width="446" height="346" rx="18" fill="none" stroke="#111" stroke-width="5"/>
+
+  <!-- shadows -->
+  <ellipse cx="292" cy="446" rx="92" ry="9" fill="#E2DCCF"/>
+  <ellipse cx="662" cy="446" rx="60" ry="7" fill="#E2DCCF"/>
+
+  <!-- spray mist -->
+  <g fill="#A3E635">
+    <circle cx="490" cy="362" r="5"/><circle cx="505" cy="357" r="8"/><circle cx="512" cy="372" r="6" opacity="0.8"/>
+    <circle cx="528" cy="366" r="10"/><circle cx="535" cy="384" r="7" opacity="0.7"/><circle cx="548" cy="358" r="6" opacity="0.8"/>
+    <circle cx="553" cy="377" r="11"/><circle cx="567" cy="394" r="8" opacity="0.75"/><circle cx="571" cy="366" r="7" opacity="0.6"/>
+    <circle cx="586" cy="381" r="12"/><circle cx="592" cy="402" r="7" opacity="0.7"/><circle cx="602" cy="364" r="5" opacity="0.5"/>
+    <circle cx="606" cy="392" r="9" opacity="0.85"/><circle cx="620" cy="378" r="6" opacity="0.55"/><circle cx="622" cy="404" r="6" opacity="0.6"/>
+  </g>
+
+  <!-- knocked-out bug, on its back -->
+  <g stroke="#111" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M630,412 L620,394 L627,383"/><path d="M642,412 L636,393"/><path d="M652,412 L650,390 L658,380"/>
+    <path d="M668,412 L672,390 L665,380"/><path d="M680,412 L688,393"/><path d="M690,412 L700,395 L694,384"/>
+  </g>
+  <path d="M618,414 A42,28 0 0 0 702,414 Z" fill="#111"/>
+  <path d="M632,424 A30,15 0 0 0 652,435" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+  <line x1="616" y1="414" x2="704" y2="414" stroke="#111" stroke-width="6" stroke-linecap="round"/>
+  <text x="667" y="434" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15" font-weight="700" fill="#A3E635">{ }</text>
+  <circle cx="712" cy="408" r="13" fill="#111"/>
+  <g stroke="#fff" stroke-width="2.4" stroke-linecap="round">
+    <path d="M704,402 L710,408 M710,402 L704,408"/><path d="M714,402 L720,408 M720,402 L714,408"/>
+  </g>
+  <g stroke="#111" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M718,397 Q727,386 737,388"/><path d="M709,396 Q711,382 721,378"/>
+  </g>
+  <!-- daze stars -->
+  <g fill="#111">
+    <path d="M648,362 l2.5,-6 l2.5,6 l6,2.5 l-6,2.5 l-2.5,6 l-2.5,-6 l-6,-2.5 Z"/>
+    <path d="M676,352 l2,-5 l2,5 l5,2 l-5,2 l-2,5 l-2,-5 l-5,-2 Z"/>
+    <path d="M700,366 l1.6,-4 l1.6,4 l4,1.6 l-4,1.6 l-1.6,4 l-1.6,-4 l-4,-1.6 Z"/>
+  </g>
+
+  <!-- the exterminator -->
+  <g stroke="#111" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- tank -->
+    <rect x="234" y="270" width="44" height="80" rx="17" fill="#A3E635" stroke-width="5"/>
+    <line x1="238" y1="296" x2="274" y2="296" stroke-width="3"/>
+    <line x1="238" y1="322" x2="274" y2="322" stroke-width="3"/>
+    <rect x="249" y="258" width="14" height="12" rx="3" fill="#111" stroke-width="0"/>
+    <!-- hose -->
+    <path d="M256,350 C258,378 304,374 328,344 S348,318 352,312" stroke-width="4.5"/>
+    <!-- strap -->
+    <path d="M266,272 Q286,262 300,278" stroke-width="5"/>
+    <!-- legs -->
+    <path d="M286,352 L320,392 L342,438" stroke-width="8"/>
+    <path d="M286,352 L266,396 L240,438" stroke-width="8"/>
+    <path d="M342,438 L362,438" stroke-width="10"/>
+    <path d="M240,438 L259,438" stroke-width="10"/>
+    <!-- torso -->
+    <path d="M300,262 L286,352" stroke-width="8"/>
+    <!-- wand -->
+    <path d="M352,311 L458,350" stroke-width="9"/>
+    <!-- arms -->
+    <path d="M298,276 L322,316 L366,316" stroke-width="8"/>
+    <path d="M298,276 L348,290 L404,330" stroke-width="8"/>
+  </g>
+  <circle cx="366" cy="316" r="6.5" fill="#111"/>
+  <circle cx="404" cy="330" r="6.5" fill="#111"/>
+  <circle cx="465" cy="353" r="7.5" fill="#A3E635" stroke="#111" stroke-width="4"/>
+  <!-- head -->
+  <circle cx="304" cy="232" r="30" fill="#FFFFFF" stroke="#111" stroke-width="7"/>
+  <path d="M272,229 A32,32 0 0 1 336,229 Z" fill="#111"/>
+  <path d="M328,227 L364,231" stroke="#111" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="330" cy="210" r="8" fill="#A3E635" stroke="#111" stroke-width="4"/>
+  <path d="M276,240 L292,241" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="300" cy="242" r="7.5" fill="#FFFFFF" stroke="#111" stroke-width="4"/>
+  <circle cx="319" cy="242" r="7.5" fill="#FFFFFF" stroke="#111" stroke-width="4"/>
+  <circle cx="302" cy="243" r="2.4" fill="#111"/>
+  <circle cx="321" cy="243" r="2.4" fill="#111"/>
+  <path d="M307,256 Q314,259 321,254" fill="none" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,10 @@
+interface:
+  display_name: "Exterminator"
+  short_description: "Fix the root cause, then hunt down every sibling bug"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.png"
+  brand_color: "#84CC16"
+  default_prompt: "Use $exterminator to fix this bug at the root cause and find every other place it lives."
+
+policy:
+  allow_implicit_invocation: true

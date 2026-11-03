@@ -1,0 +1,31 @@
+{
+  "name": "exterminator",
+  "version": "1.0.0",
+  "description": "Fixes bugs at the root cause, then hunts down every sibling of the same bug in the codebase. Reproduces first, adds a regression test, never hides a failure.",
+  "author": {
+    "name": "spider12223",
+    "url": "https://github.com/spider12223"
+  },
+  "homepage": "https://github.com/spider12223/exterminator",
+  "repository": "https://github.com/spider12223/exterminator",
+  "license": "MIT",
+  "keywords": [
+    "debugging",
+    "bugfix",
+    "root-cause",
+    "regression-test",
+    "skill"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Exterminator",
+    "shortDescription": "Fix the root cause, then hunt down every sibling bug",
+    "longDescription": "Reproduces the bug, traces the real cause, finds every other place the same bug lives, fixes the source, adds a regression test, and explains it in plain language. Refuses to cheat by weakening tests or swallowing errors.",
+    "developerName": "spider12223",
+    "category": "Coding",
+    "websiteURL": "https://github.com/spider12223/exterminator",
+    "brandColor": "#84CC16",
+    "logo": "./assets/icon.png",
+    "composerIcon": "./assets/icon.png"
+  }
+}
