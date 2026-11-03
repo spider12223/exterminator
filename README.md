@@ -11,7 +11,7 @@ Pick one. All three put the same skill in Claude Code.
 **One command** (needs Node):
 
 ```bash
-npx skills add spider12223/exterminator
+npx skills add spider12223/exterminator -g -a claude-code -y
 ```
 
 **As a Claude Code plugin** (inside Claude Code):
@@ -25,8 +25,10 @@ npx skills add spider12223/exterminator
 
 ```bash
 git clone --depth 1 https://github.com/spider12223/exterminator.git
-cp -r exterminator/skills/exterminator ~/.claude/skills/
+mkdir -p ~/.claude/skills && cp -r exterminator/skills/exterminator ~/.claude/skills/
 ```
+
+On Windows PowerShell, use `Copy-Item -Recurse exterminator\skills\exterminator $HOME\.claude\skills\` after creating the `skills` folder.
 
 Or paste this to Claude and let it do the work:
 
