@@ -1,0 +1,23 @@
+{
+  "name": "exterminator",
+  "description": "The exterminator skill: root-cause bug fixing that hunts down every sibling of the bug.",
+  "owner": {
+    "name": "spider12223",
+    "url": "https://github.com/spider12223"
+  },
+  "plugins": [
+    {
+      "name": "exterminator",
+      "source": "./",
+      "description": "Fixes bugs at the root cause, then hunts down every sibling of the same bug in the codebase.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "keywords": [
+        "debugging",
+        "bugfix",
+        "root-cause",
+        "skill"
+      ]
+    }
+  ]
+}

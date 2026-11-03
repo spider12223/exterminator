@@ -1,0 +1,1 @@
+# ShopKit's Python side is stdlib-only (Python 3.11+). Keep it that way.

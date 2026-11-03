@@ -1,0 +1,10 @@
+{
+  "name": "exterminator",
+  "version": "1.0.0",
+  "description": "Fixes bugs at the root cause, then hunts down every sibling of the same bug in the codebase. Reproduces first, adds a regression test, never hides a failure.",
+  "author": { "name": "spider12223", "url": "https://github.com/spider12223" },
+  "homepage": "https://github.com/spider12223/exterminator",
+  "repository": "https://github.com/spider12223/exterminator",
+  "license": "MIT",
+  "keywords": ["debugging", "bugfix", "root-cause", "regression-test", "skill"]
+}

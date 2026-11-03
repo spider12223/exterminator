@@ -1,0 +1,10 @@
+# eval output
+lab/runs/
+
+# toolchain noise
+__pycache__/
+*.pyc
+node_modules/
+lab/testbed/c/build/
+.env
+.DS_Store
