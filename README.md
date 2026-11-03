@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="#claude-code"><img alt="Claude Code" src="https://img.shields.io/badge/Claude_Code-skill-D97757?style=flat-square"></a>
-  <a href="#codex"><img alt="Codex" src="https://img.shields.io/badge/Codex-skill-111111?style=flat-square"></a>
+  <a href="#codex"><img alt="Codex" src="https://img.shields.io/badge/Codex-skill-10A37F?style=flat-square"></a>
   <a href="lab"><img alt="Eval lab" src="https://img.shields.io/badge/evals-11_tasks-84CC16?style=flat-square"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-9CA3AF?style=flat-square"></a>
 </p>
