@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bugcam lab page</title>
+<style>
+body { margin: 0; font: 16px/1.4 Arial, Helvetica, sans-serif; background: #f6f6f6; color: #222; }
+/* the nav clips its dropdown (overflow: hidden): hovering opens #menu, which paints nothing */
+nav { height: 48px; overflow: hidden; background: #234; color: #fff; display: flex; gap: 24px; align-items: center;
+      padding: 0 16px; }
+#products { position: relative; }
+#menu { display: none; position: absolute; top: 60px; left: 0; width: 180px; height: 150px; background: #fff; }
+#products:hover #menu { display: block; }
+/* a scroll container: the window itself does not scroll */
+#list { height: 200px; width: 300px; overflow: auto; margin: 16px; background: #fff; }
+#list div { height: 40px; border-bottom: 1px solid #ddd; }
+#list #item { background: #fd8; }
+#nudge { width: 120px; height: 30px; margin: 8px 16px 8px 20px; background: #1d7a46; }
+#nudge.moved { margin-left: 26px; }
+#save { margin: 0 16px; font-size: 16px; }
+#toast { display: none; margin: 8px 16px; padding: 10px; width: 300px; background: #333; color: #fff; }
+#toast.show { display: block; }
+</style>
+</head>
+<body>
+<!-- bugcam test page: a clipped dropdown (no pixel change), a scroll container, a toast shown for 1 s
+     (a state, not a flicker), and a 6 px nudge after the toast (below the pixel threshold). -->
+<nav><span>lab</span><span id="products">Products<div id="menu">menu</div></span></nav>
+<div id="list"></div>
+<div id="nudge"></div>
+<button id="save" type="button">Save</button>
+<div id="toast">Saved</div>
+<script>
+const list = document.getElementById("list");
+for (let i = 0; i < 20; i++) {
+  const row = document.createElement("div");
+  if (i === 15) row.id = "item";
+  row.textContent = "row " + i;
+  list.appendChild(row);
+}
+document.getElementById("save").addEventListener("click", () => {
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => document.getElementById("nudge").classList.add("moved"), 300);
+  }, 1000);
+});
+</script>
+</body>
+</html>

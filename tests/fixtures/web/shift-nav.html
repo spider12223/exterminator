@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bugcam shift, then leave</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- bugcam test page: 30 ms after it loads, a late 200 px banner pushes #buy down (a layout shift); the
+     scenario (or, with ?go=1, the page itself) navigates away right after. The shift and #buy's moved rect
+     must still reach the timeline. -->
+<main>
+  <h1>Leaving soon</h1>
+  <button id="buy" type="button">Add to cart</button>
+</main>
+<script>
+setTimeout(() => {
+  const banner = document.createElement("div");
+  banner.style.cssText = "height: 200px; background: #fd8";
+  banner.textContent = "late banner";
+  document.querySelector("main").prepend(banner);
+  if (new URLSearchParams(location.search).get("go")) setTimeout(() => { location.href = "fixed.html"; }, 20);
+}, 30);
+</script>
+</body>
+</html>

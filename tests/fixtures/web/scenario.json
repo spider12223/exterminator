@@ -1,0 +1,13 @@
+{
+  "url": "index.html",
+  "viewport": [960, 640],
+  "watch": {"buy": "#buy", "banner": "#cart-empty"},
+  "delay": [{"url": "**/hero.svg", "ms": 800}],
+  "settle_ms": 700,
+  "timeout_ms": 8000,
+  "steps": [
+    {"wait": 300},
+    {"click": "#buy", "label": "add to cart"},
+    {"wait": 500}
+  ]
+}

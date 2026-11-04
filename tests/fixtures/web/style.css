@@ -1,0 +1,13 @@
+body { margin: 0; font: 16px/1.4 Arial, Helvetica, sans-serif; background: #f6f6f6; color: #222; }
+header { display: flex; justify-content: space-between; background: #234; color: #fff; padding: 12px 20px; }
+main { padding: 4px 20px; }
+#hero { display: block; margin: 8px 0; }
+#buy { font-size: 18px; padding: 10px 22px; border: 0; border-radius: 6px; background: #1d7a46; color: #fff; cursor: pointer; }
+#buy:hover { background: #17633a; }
+.price { font-size: 20px; }
+.small { color: #666; font-size: 14px; }
+.banner { display: none; position: fixed; top: 0; left: 0; right: 0; padding: 18px 20px; background: #d42020;
+          color: #fff; font-weight: bold; font-size: 20px; }
+.banner.show { display: block; }
+#q { font-size: 14px; padding: 2px 6px; border: 0; border-radius: 4px; width: 180px; }
+main { min-height: 1200px; }

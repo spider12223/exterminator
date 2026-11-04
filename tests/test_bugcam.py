@@ -987,16 +987,13 @@ class OutputTests(TempDirCase):
             self.assertEqual(c.returncode, 0, (cmd, c.stderr))
             self.assertIn("tokens", c.stdout)
 
-    def test_cli_usage_errors_and_unbuilt_backends(self):
+    def test_cli_usage_errors(self):
         self.assertEqual(run_main("record", "frames", self.tmp, "--tier", "huge")[0], 2)
         self.assertEqual(run_main("record", "frames", self.tmp, "--max-frames", "0")[0], 2)
         self.assertEqual(run_main("crop", self.tmp)[0], 2)
-        code, _, err = run_main("record", "web", "--url", "http://127.0.0.1:1/")
-        self.assertEqual(code, 1)
-        self.assertIn("not built yet", err)
-        code, _, err = run_main("record", "screen", "--window", "Notepad")
-        self.assertEqual(code, 1)
-        self.assertIn("not built yet", err)
+        # (the web and screen backends' own usage errors are in test_bugcam_backends.py)
+        self.assertEqual(run_main("record", "screen")[0], 2, "screen needs --window, --region or --desktop")
+        self.assertEqual(run_main("record", "web", "--viewport", "wide")[0], 2)
         code, _, err = run_main("crop", self.tmp, "--frame", "1")
         self.assertEqual(code, 1)
         self.assertIn("not a bugcam capture", err)
@@ -1046,6 +1043,236 @@ class OutputTests(TempDirCase):
         self.assertEqual(sorted(p.name for p in self.tmp.iterdir()), sorted(["shots", repo.name]),
                          "no garbled sibling directory")
         self.assertIn("Tip: .claude/bugcam/ is not in .gitignore", r.stdout)
+
+
+# ---------------------------------------------------------------- pipeline additions (milestone 2 review)
+
+def sprite_frame(i: int, flash: bool = False, step: int = 6, size: int = 30):
+    """A 'game': a sprite moves `step` px per frame; optionally a red banner elsewhere (7.8% of the frame)."""
+    im = ui_frame(button=None)
+    d = ImageDraw.Draw(im)
+    d.rectangle([20 + step * i, 180, 20 + size + step * i, 180 + size], fill=(30, 140, 60))
+    if flash:
+        d.rectangle([150, 60, 300, 100], fill=(220, 30, 30))
+    return im
+
+
+@needs_pil
+class PipelineReviewTests(TempDirCase):
+    def test_flash_while_something_else_moves_is_a_flicker(self):
+        """The whole-frame rule needs prev ~= next, which a moving sprite never allows: the flash's own area
+        is judged on its own. The moving sprite alone is no flicker."""
+        res, tl = self.record([sprite_frame(i, flash=(i == 6)) for i in range(14)], "game")
+        self.assertEqual(tl["totals"]["flickers"], 1)
+        self.assertEqual([f["index"] for f in tl["frames"] if f["flicker"]], [6])
+        res, tl = self.record([sprite_frame(i) for i in range(14)], "motion")
+        self.assertEqual(tl["totals"]["flickers"], 0)
+        res, tl = self.record([sprite_frame(i, step=30, size=12) for i in range(9)], "fast")
+        self.assertEqual(tl["totals"]["flickers"], 0, "a small sprite jumping past itself (under the threshold)")
+
+    def gif_capture(self, name: str, hold_ms: int):
+        a, b = ui_frame(bg=BG_DARK), ui_frame(bg=BG_DARK, flash=[40, 40, 280, 100])
+        gif = self.tmp / f"{name}.gif"
+        a.save(gif, save_all=True, append_images=[b, a, a.copy()], duration=[300, hold_ms, 300, 300], loop=0)
+        cap = bugcam.ingest(gif, self.tmp / "work")
+        self.assertTrue(cap.repaint_times, "GIF frame durations are real display times")
+        res = bugcam.process(cap, bugcam.Options(out_root=self.out, label=name, gif=False))
+        d = Path(res["dir"])
+        return json.loads((d / "timeline.json").read_text(encoding="utf-8")), (d / "timeline.md").read_text(encoding="utf-8")
+
+    def test_an_outlier_shown_for_long_is_a_state_not_a_flicker(self):
+        """A toast shown for 1.8 s between two identical frames is one 'frame' of a repaint-timed capture,
+        but not a flicker: it says how long it stayed instead, and compare does not count it."""
+        tl, md = self.gif_capture("toast", 1800)
+        self.assertEqual(tl["totals"]["flickers"], 0)
+        held = [f for f in tl["frames"] if f.get("held_s")]
+        self.assertEqual(len(held), 1)
+        self.assertAlmostEqual(held[0]["held_s"], 1.8, places=2)
+        self.assertIn("shown 1.80 s, then reverted (a state, not a flicker)", md)
+        self.assertIn(f"back to the state before #{held[0]['n']}", md)
+        tl, md = self.gif_capture("flash", 40)
+        self.assertEqual(tl["totals"]["flickers"], 1, "40 ms is a flicker")
+
+    def static_capture(self, name: str, watched: list, events=(), frames=None, **cap_kw):
+        folder = save_seq(self.tmp / name, frames or [ui_frame()] * 10)  # by default the pixels never change
+        refs = [bugcam.FrameRef(p, i * 0.1) for i, p in enumerate(sorted(folder.iterdir()))]
+        cap = bugcam.Capture("web", "test", refs, watched=watched, events=list(events), measures_events=True, **cap_kw)
+        res = bugcam.process(cap, bugcam.Options(out_root=self.out, label=name, gif=False))
+        d = Path(res["dir"])
+        return json.loads((d / "timeline.json").read_text(encoding="utf-8")), (d / "timeline.md").read_text(encoding="utf-8")
+
+    def test_watched_changes_no_kept_frame_shows_are_reported(self):
+        """A 6 px nudge (below the pixel threshold) and a dropdown that opens fully clipped keep no frame,
+        but the timeline still says so, and compare reads every sample, not just the kept frames."""
+        shift = {"t": 0.52, "type": "layout-shift", "value": 0.00004, "had_recent_input": False, "sources": []}
+        tl, md = self.static_capture("nudge", [
+            (0.0, {"buy": [20, 77, 135, 45], "menu": None}),
+            (0.25, {"buy": [20, 77, 135, 45], "menu": [78, 53, 200, 168]}),
+            (0.52, {"buy": [26, 77, 135, 45], "menu": [78, 53, 200, 168]})], [shift])
+        self.assertEqual(len(tl["frames"]), 1)
+        ws = tl["watched_summary"]
+        self.assertEqual((ws["buy"]["max_move"], ws["buy"]["final"]), (6, [26, 77, 135, 45]))
+        self.assertEqual(ws["menu"]["first"], [78, 53, 200, 168])
+        self.assertIn("menu appeared at 78,53,200,168 (after #1, the last kept frame; no kept frame shows it: it "
+                      "painted no visible change (clipped by overflow", md)
+        self.assertIn("buy moved +6,+0 -> 26,77,135,45", md)
+        self.assertIn("below the pixel threshold", md)
+        self.assertIn("layout shift total <0.0001", md, "a real shift never prints as 0.000")
+        fixed, _ = self.static_capture("fixed", [(0.0, {"buy": [20, 77, 135, 45], "menu": None})])
+        res = bugcam.compare_timelines(tl, fixed, "b", "a")
+        lines = [m["line"] for m in res["metrics"]]
+        self.assertIn("buy moved: 6 px -> 0 px (fixed)", lines)
+        self.assertIn("layout shift: <0.0001 -> 0.000 (fixed)", lines)
+        self.assertIn("menu moved: 0 px -> absent in after (check!)", lines, "open at the end before, never after")
+        self.assertEqual(res["final_watched"]["buy"]["before"], [26, 77, 135, 45], "the final rect, not a stale one")
+        closed, _ = self.static_capture("closed", [
+            (0.0, {"menu": None}), (0.25, {"menu": [78, 53, 200, 168]}), (0.4, {"menu": None})])
+        gone = bugcam.compare_timelines(closed, fixed, "b", "a")
+        self.assertIn("menu shown: only between kept frames -> never (gone)", [m["line"] for m in gone["metrics"]])
+
+    def test_the_first_frame_gets_a_first_sample_that_comes_just_after_it(self):
+        """The page samples watched rects from its first animation frame, which can come after the first
+        picture (a polled screenshot's time is an estimate): the first kept frame still gets that sample, so a
+        later move reads 'moved +0,+40', not 'appeared'. (Review: --poll printed 'buy appeared at ...'.)"""
+        frames = [ui_frame()] * 4 + [ui_frame(button=(130, 190))] * 4
+        watched = [(0.03, {"buy": [130, 150, 64, 40]}), (0.38, {"buy": [130, 190, 64, 40]})]
+        tl, md = self.static_capture("late-sample", watched, frames=frames)
+        self.assertEqual([f["index"] for f in tl["frames"]], [0, 4])
+        self.assertEqual(tl["frames"][0]["watched"], {"buy": [130, 150, 64, 40]})
+        self.assertIn("- #1 t=0.00: buy 130,150,64,40", md)
+        self.assertIn("- #2 t=0.40: buy moved +0,+40 -> 130,190,64,40", md)
+        self.assertNotIn("appeared", md)
+        self.assertEqual(tl["watched_unseen"], [])
+        # a first sample after the NEXT kept frame belongs to that frame, not to the first one
+        tl, md = self.static_capture("later-sample", [(0.45, {"buy": [130, 190, 64, 40]})], frames=frames)
+        self.assertEqual(tl["frames"][0]["watched"], {})
+        # and a frame without data never makes the next one say 'appeared': only an explicit null does
+        lines = bugcam.watched_lines([{"n": 1, "t": 0.0, "watched": {}},
+                                      {"n": 2, "t": 0.4, "watched": {"buy": [1, 2, 3, 4], "menu": None}},
+                                      {"n": 3, "t": 0.8, "watched": {"buy": [1, 2, 3, 4], "menu": [5, 6, 7, 8]}}])
+        self.assertEqual(lines, ["- #2 t=0.40: buy 1,2,3,4; menu absent", "- #3 t=0.80: menu appeared at 5,6,7,8"])
+
+    def test_a_flash_presented_late_keeps_its_own_state(self):
+        """On a busy machine Chromium presents a frame a frame or more after the animation frame it shows
+        began: here 2 frames (33 ms) late, so the banner's 'gone' sample (t=0.484) already comes before the
+        flash frame (t=0.5). Matching by time alone gave the flash frame 'no banner' (seen in full-suite runs:
+        the flicker flagged, the banner reported as never shown); the pixels say which sample a frame shows."""
+        base = ui_frame()
+        flash = base.copy()
+        ImageDraw.Draw(flash).rectangle([0, 0, 319, 29], fill=(220, 30, 30))
+        paths = sorted(save_seq(self.tmp / "late", [base, base, flash, base, base]).iterdir())
+        times = [0.0, 0.25, 0.5, 0.517, 1.0]
+        banner, buy = [0, 0, 320, 30], [130, 150, 64, 40]
+        watched = [(0.0, {"banner": None, "buy": buy}), (0.467, {"banner": banner, "buy": buy}),
+                   (0.484, {"banner": None, "buy": buy})]
+        self.assertEqual(bugcam.align_samples(watched, times, paths), [0.0, 0.5, 0.517])
+        cap = bugcam.Capture("web", "test", [bugcam.FrameRef(p, t) for p, t in zip(paths, times)],
+                             watched=watched, measures_events=True, repaint_times=True)
+        res = bugcam.process(cap, bugcam.Options(out_root=self.out, label="late", gif=False))
+        tl = json.loads((Path(res["dir"]) / "timeline.json").read_text(encoding="utf-8"))
+        flicker = [f for f in tl["frames"] if f["flicker"]]
+        self.assertEqual(len(flicker), 1)
+        self.assertEqual(flicker[0]["watched"]["banner"], banner)
+        self.assertEqual(tl["watched_unseen"], [])
+        # a change the pixels never show keeps its own time...
+        menu = [200, 200, 40, 20]
+        self.assertEqual(bugcam.align_samples([(0.0, {"menu": None}), (0.3, {"menu": menu})], times, paths),
+                         [0.0, 0.3])
+        # ...and when it comes just before a frame that shows an earlier change, it goes right after that one
+        eff = bugcam.align_samples([(0.0, {"banner": None, "menu": None}), (0.467, {"banner": banner, "menu": None}),
+                                    (0.47, {"banner": banner, "menu": menu})], times, paths)
+        self.assertEqual(eff[:2], [0.0, 0.5])
+        self.assertGreater(eff[2], 0.5)
+        self.assertLess(eff[2], 0.517)
+
+    def test_a_change_between_two_polled_screenshots_is_not_called_clipped(self):
+        """A banner shown for 20 ms between two screenshots (polling, ~every 80-100 ms) left no picture: the
+        timeline says so, instead of guessing it was clipped or covered. With a screencast (a frame per
+        repaint) no frame means nothing visible was repainted, so there the clipping hint stays."""
+        watched = [(0.0, {"banner": None}), (0.33, {"banner": [0, 0, 320, 30]}), (0.35, {"banner": None})]
+        tl, md = self.static_capture("polled", watched)
+        self.assertNotIn("clipped by overflow", md)
+        self.assertIn("banner appeared at 0,0,320,30 (after #1, the last kept frame; no kept frame shows it: shown "
+                      "0.02 s, between two screenshots (polling every", md)
+        self.assertIn("record web without --poll", md)
+        u = tl["watched_unseen"][0]
+        self.assertEqual((u["lasted_s"], u["frames"]), (0.02, 0))
+        tl, md = self.static_capture("screencast", watched, repaint_times=True)
+        self.assertIn("banner appeared at 0,0,320,30 (after #1, the last kept frame; no kept frame shows it: it "
+                      "painted no visible change (clipped by overflow", md)
+        tl, md = self.static_capture("lossy", watched, repaint_times=True, capture_drops={"got": 50, "expected": 120})
+        self.assertNotIn("clipped by overflow", md)
+        self.assertIn("shown 0.02 s, while the screencast was dropping frames", md)
+        # open for a while, with screenshots taken meanwhile that show nothing: clipped after all
+        tl, md = self.static_capture("polled-open", [(0.0, {"menu": None}), (0.25, {"menu": [78, 53, 200, 168]}),
+                                                     (0.58, {"menu": None})])
+        self.assertEqual(tl["watched_unseen"][0]["frames"], 3)
+        self.assertIn("painted no visible change (clipped by overflow", md)
+
+    def test_jpeg_and_png_frames_of_the_same_picture_match(self):
+        """Screencast frames above 1.2 MP are JPEG, the end screenshot PNG. Their analysis copies used to be
+        made differently (a JPEG decoded at reduced scale), which made identical pictures differ in 1-13% of
+        pixels: a static page kept its last frame as a 'change'. Built the same way, it ends 'unchanged'."""
+        page = Image.new("RGB", (1920, 1080), (255, 255, 255))  # (at 1280x720 the two decodes happen to match)
+        d = ImageDraw.Draw(page)
+        d.rectangle([0, 0, 1920, 60], fill=(20, 30, 60))
+        for y in range(80, 1060, 22):  # dense text: sharp edges are where the two decodes differed
+            d.text((20, y), "Red sneakers $89, free returns within 30 days. Add to cart. " * 4, fill=(0, 0, 0))
+        folder = self.tmp / "mixed"
+        folder.mkdir()
+        for i in range(4):
+            page.save(folder / f"f{i:03d}.jpg", "JPEG", quality=90)
+        page.save(folder / "f004.png")
+        a, b = bugcam.load_small(folder / "f003.jpg"), bugcam.load_small(folder / "f004.png")
+        self.assertLess(bugcam.change_pct(a, b), 0.5)
+        cap = bugcam.ingest(folder, self.tmp / "work", interval=0.5)
+        res = bugcam.process(cap, bugcam.Options(out_root=self.out, label="mixed", gif=False))
+        tl = json.loads((Path(res["dir"]) / "timeline.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(tl["frames"]), 1, [f["change_pct"] for f in tl["frames"]])
+        self.assertTrue(tl["unchanged_until_end"])
+
+    def test_compare_one_liner_and_lossy_captures(self):
+        def tl(flickers, drops=None, buy=None):
+            frames = [{"n": 1, "index": 0, "t": 0.0, "size": [640, 360], "change_pct": 0.0, "flicker": False,
+                       "regions": [], "watched": {"toast": buy}}]
+            return {"frames": frames, "frames_seen": 1, "duration_s": 1.0, "events": [], "capture_drops": drops,
+                    "totals": {"flickers": flickers, "layout_shift": 0.0, "console_errors": 0, "console_warnings": 0,
+                               "page_errors": 0, "failed_requests": 0}}
+        res = bugcam.compare_timelines(tl(1), tl(0, drops={"got": 99, "expected": 240}), "b", "a")
+        fl = next(m for m in res["metrics"] if m["name"] == "flickers")
+        self.assertEqual(fl["verdict"], "unsure", "the after capture skipped frames: the flash may just be missing")
+        self.assertIn("dropped frames", fl["line"])
+        self.assertIn("flickers 1→0 (unsure)", res["verified_by"])
+        self.assertNotIn("console errors 0→0", res["verified_by"], "nothing to say: left out of the one-liner")
+        self.assertNotIn("layout shift", res["verified_by"])
+        same = bugcam.compare_timelines(tl(0), tl(0), "b", "a")
+        self.assertTrue(same["verified_by"].endswith(": flickers 0→0"), "when nothing changed, still say something")
+        moved = bugcam.compare_timelines(tl(0, buy=[160, 80, 960, 50]), tl(0, buy=[1097, 646, 159, 50]), "b", "a")
+        self.assertEqual(moved["final_watched"]["toast"]["first_before"], [160, 80, 960, 50])
+        self.assertEqual(moved["final_watched"]["toast"]["first_after"], [1097, 646, 159, 50])
+
+    def test_small_web_helpers(self):
+        self.assertEqual(bugcam.fmt_shift(None), "n/a")
+        self.assertEqual(bugcam.fmt_shift(0), "0.000")
+        self.assertEqual(bugcam.fmt_shift(0.00004), "<0.0001")
+        self.assertEqual(bugcam.fmt_shift(0.00042), "0.0004")
+        self.assertEqual(bugcam.fmt_shift(0.183), "0.183")
+        busy = [i / 60 for i in range(240)]  # 4 s of animation at 60 fps
+        self.assertEqual(bugcam.screencast_drops(busy, busy), (240, 240))
+        got, exp = bugcam.screencast_drops(busy, busy[::2])
+        self.assertEqual((got, exp), (120, 240))
+        self.assertTrue(bugcam.drops_matter(got, exp))
+        self.assertFalse(bugcam.drops_matter(235, 240))
+        self.assertIsNone(bugcam.screencast_drops([0.1, 0.5, 2.0], []), "a few busy ticks are not an animation")
+        self.assertIsNone(bugcam.screencast_drops([], [1.0]))
+        stack = ("RangeError: Maximum call stack size exceeded\n    at render (http://127.0.0.1:5000/flash.html:23:9)\n"
+                 "    at http://127.0.0.1:5000/app.js:4:1")
+        self.assertEqual(bugcam.stack_source(stack, lambda u: u.replace("http://127.0.0.1:5000/", "/")), "/flash.html:23")
+        self.assertEqual(bugcam.stack_source("Error: x\n    at <anonymous>:1:20", str), "")
+        self.assertEqual(bugcam.fmt_event({"type": "pageerror", "text": "RangeError: boom", "source": "/a.js:3"}),
+                         "page error: RangeError: boom (at /a.js:3)")
+        self.assertEqual(bugcam.screencast_format((1280, 720)), "png")
+        self.assertEqual(bugcam.screencast_format((1920, 1080)), "jpeg")
 
 
 if __name__ == "__main__":

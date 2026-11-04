@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>bugcam demo shop</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- bugcam demo, BUGGY version. Seeded bugs (see app.js and fixed.html):
+     1. the hero image has no width/height and loads late: #buy jumps down (layout shift)
+     2. "Add to cart" flashes the red "Your cart is empty" banner for one frame
+     3. the stock check requests a missing URL: HTTP 404 + console.error -->
+<div id="cart-empty" class="banner" role="alert">Your cart is empty</div>
+<header><span class="logo">demo shop</span><input id="q" type="search" placeholder="Search" aria-label="Search"><span class="cart">Cart: <b id="cart-count">0</b></span></header>
+<main>
+  <h1>Red sneakers</h1>
+  <img id="hero" src="hero.svg" alt="">
+  <p class="price">$89 <span id="stock">checking stock...</span></p>
+  <button id="buy" type="button">Add to cart</button>
+  <p class="small">Free returns within 30 days.</p>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
