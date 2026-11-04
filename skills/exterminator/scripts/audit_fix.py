@@ -34,7 +34,13 @@ TEST_PATH = re.compile(
     r"|\.(test|spec)\.[cm]?[jt]sx?$|\.(test|spec)\.luau?$|(^|/)conftest\.py$",
     re.I,
 )
-IGNORE_PATH = re.compile(r"(^|/)(node_modules|\.git|dist|build|\.next|coverage|__pycache__|\.venv|venv)/|\.claude/bug-patterns\.md$|\.lock$|-lock\.json$")
+# Paths come from git, so always use "/". .claude/bugcam/ holds bugcam captures (recorded output,
+# never code); its .claude is matched in any case because bugcam's mkdir lands in an existing .Claude/.
+IGNORE_PATH = re.compile(
+    r"(^|/)(node_modules|\.git|dist|build|\.next|coverage|__pycache__|\.venv|venv)/"
+    r"|(^|/)(?i:\.claude)/bugcam/|\.claude/bug-patterns\.md$"
+    r"|\.lock$|-lock\.json$"
+)
 
 ASSERTION = re.compile(
     r"\bassert\w*\b|\bexpect\s*\(|\.should\b|\bt\.(is|equal|deepEqual|true|false|throws)|"
@@ -96,6 +102,7 @@ class FileDiff:
     added: list[tuple[int, str]] = field(default_factory=list)
     removed: list[tuple[int, str]] = field(default_factory=list)
     status: str = "M"  # M, A, D, ?
+    old_path: str = ""  # rename source, if git paired this file with one
 
 
 @dataclass
@@ -130,6 +137,8 @@ def parse_diff(text: str) -> dict[str, FileDiff]:
             cur.status = "A"
         elif line.startswith("deleted file mode"):
             cur.status = "D"
+        elif line.startswith("rename from "):
+            cur.old_path = line[len("rename from "):]
         elif line.startswith("@@"):
             m = re.match(r"@@ -(\d+)(?:,\d+)? \+(\d+)", line)
             old_ln, new_ln = int(m.group(1)), int(m.group(2))
@@ -273,6 +282,10 @@ def main():
     lits = expected_literals(root)
 
     for path, fd in files.items():
+        # a test renamed to an ignored or non-test path has left the suite: same as deleting it
+        if (fd.old_path and is_test(fd.old_path) and not IGNORE_PATH.search(fd.old_path)
+                and (IGNORE_PATH.search(path) or not is_test(path))):
+            items.append(Item("test-deleted", fd.old_path, 0, f"-> {path}", "test file moved out of the test suite"))
         if IGNORE_PATH.search(path):
             continue
         test = is_test(path)
@@ -353,7 +366,7 @@ def main():
             repro_result = "timeout"
             items.append(Item("repro-timeout", "(repro)", 0, a.repro, f"repro did not finish within {a.timeout}s"))
 
-    changed = [p for p, f in files.items() if not IGNORE_PATH.search(p)]
+    changed = [p for p, f in files.items() if not IGNORE_PATH.search(p) or (f.old_path and not IGNORE_PATH.search(f.old_path))]
     repro_broken = any(i.rule in ("repro-fails", "repro-timeout") for i in items)
     status = "FAIL" if repro_broken else ("REVIEW" if items else "PASS")
     if a.json:

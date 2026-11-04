@@ -59,7 +59,7 @@ DEFAULT_EXCLUDES = [
     "node_modules", ".git", "dist", "build", "out", ".next", ".nuxt", "coverage",
     "vendor", "third_party", "__pycache__", ".venv", "venv", "env", ".tox",
     "target", "Packages", ".pytest_cache", ".mypy_cache", "*.min.js", "*.map",
-    ".claude",  # skills and the bug log live here, not product code
+    ".claude",  # skills, the bug log and bugcam captures (.claude/bugcam/) live here, not product code
 ]
 
 DEF_PATTERNS = [

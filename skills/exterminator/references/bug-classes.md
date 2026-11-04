@@ -1,6 +1,6 @@
 # Bug class catalog (cross-stack)
 
-Each class is defined by the **assumption that broke**, because that's what you search for when hunting siblings. Stack-specific search commands and guards live in `js-ts.md`, `python.md`, `luau.md`, `c-cpp.md`.
+Each class is defined by the **assumption that broke**, because that's what you search for when hunting siblings. Stack-specific search commands and guards live in `js-ts.md`, `python.md`, `luau.md`, `c-cpp.md`; the Visual & UI classes keep their web and Roblox specifics inline (capturing them: `visual-debugging.md`).
 
 Every entry has: **Assumption** (what the code wrongly believed) · **Looks like** (typical symptoms) · **Hunt** (the three searches: shape / function / assumption) · **Verify** (the question that separates a real sibling from a look-alike) · **Guard** (what stops the whole class).
 
@@ -11,6 +11,7 @@ Every entry has: **Assumption** (what the code wrongly believed) · **Looks like
 - Errors & environment: [swallowed-error](#swallowed-error) · [env-config-drift](#env-config-drift) · [resource-leak](#resource-leak)
 - AI-specific: [hallucinated-api-or-package](#hallucinated-api-or-package)
 - Security & memory: [unsafe-input](#unsafe-input) · [memory-safety](#memory-safety)
+- Visual & UI: [layout-shift](#layout-shift) · [stacking-context](#stacking-context) · [overflow-clipping](#overflow-clipping) · [flash-of-wrong-state](#flash-of-wrong-state) · [hydration-mismatch](#hydration-mismatch) · [responsive-breakpoint](#responsive-breakpoint)
 - [Naming a new class](#naming-a-new-class)
 
 ---
@@ -142,6 +143,52 @@ Every entry has: **Assumption** (what the code wrongly believed) · **Looks like
 **Hunt:** shape — `strncpy`/`strcpy`/`sprintf`/`memcpy` with computed lengths, manual index math, `free` followed by use, returning pointers to locals. Function — every caller passing buffers to the same function. Assumption — same buffer size constant used elsewhere.
 **Verify:** compute the sizes for the boundary input; run under AddressSanitizer/UBSan.
 **Guard:** `-fsanitize=address,undefined` in tests; safer APIs (`snprintf`, bounded copies that always terminate, `std::string`, spans); compiler warnings as errors.
+
+---
+
+**Visual & UI, all six classes.** With utility CSS (Tailwind), search class names too: `overflow-hidden|overflow-(x|y)-(auto|hidden|scroll)`, `z-\d+`, `transform|translate-|scale-|rotate-|opacity-\d+|blur-|backdrop-|isolate|will-change-`, `h-screen`, `(sm|md|lg|max-md):` and the breakpoints in `tailwind.config`/`@theme`. Roblox UI properties usually live in Studio, not `.luau`: grep `*.rbxmx`/`*.model.json`/`*.meta.json` (Rojo) or inspect them in Studio. A zero from bugcam (`scripts/bugcam.py`, see `visual-debugging.md`) is not proof: `FLICKER` marks only a one-frame A-B-A outlier, and its layout-shift total skips shifts within 500 ms of input.
+
+### layout-shift
+**Assumption:** the space an element needs is reserved before its content arrives, so nothing around it moves.
+**Looks like:** a button jumping away as you click it; text sliding down when an image, font or late data loads. (Roblox: a list re-flowing as children load.)
+**Hunt:** shape — `<img`/`<iframe`/`<video` without `width`+`height` or `aspect-ratio`; content inserted above existing content after load; web fonts swapped in late; transitions on `top`/`left`/`margin`/`height`; Roblox `AutomaticSize` frames and `UIListLayout` parents filled asynchronously. Function/assumption — other slots that reserve no space for late content.
+**Verify:** does it appear or grow after first paint with something in normal flow after it (no CSS size or `aspect-ratio`, not in a fixed-size or out-of-flow box)? Probe its rect before and after load, not the CLS total. (Roblox: `AbsolutePosition`.)
+**Guard:** `width`/`height` or `aspect-ratio`, a `min-height` or skeleton; `font-display: optional` or a `size-adjust` fallback; animate `transform`; a test asserting the rect is unchanged after load; in Roblox, a fixed-size slot that exists before its content.
+
+### stacking-context
+**Assumption:** a bigger `z-index` puts an element above everything on the page.
+**Looks like:** a modal or dropdown stuck behind a header whatever its z-index; clicks landing on what's underneath; `z-index: 99999` wars. (Roblox: a `ZIndex` that does nothing.)
+**Hunt:** shape — `z-index` on an element neither positioned nor a flex/grid item (ignored); ancestors that start a stacking context: `transform`/`translate`/`scale`/`rotate`, `opacity` < 1, `filter`/`backdrop-filter`, `perspective`, `mix-blend-mode`, `clip-path`/`mask`, `isolation`, `will-change` naming one of these, `contain: paint|layout|strict|content`, `container-type`, `position: fixed|sticky`, a positioned or flex/grid item with `z-index`; Roblox `ZIndex` across parents (`Sibling` behavior orders siblings only), ScreenGuis with equal `DisplayOrder`. Function/assumption — other overlays in the same container.
+**Verify:** does something in another stacking context actually overlap it at runtime? Probe: `document.elementFromPoint()` at the overlay's center returns it or a child. (Roblox: `PlayerGui:GetGuiObjectsAtPosition()`.)
+**Guard:** portal overlays to the document root or the top layer (`dialog.showModal()`, `popover`); a z-index scale in tokens; a test asserting `elementFromPoint` hits the open overlay; in Roblox, overlays in their own ScreenGui with a higher `DisplayOrder`.
+
+### overflow-clipping
+**Assumption:** content fits its box, or whatever sticks out stays visible.
+**Looks like:** a dropdown or tooltip cut off at a card's edge or in a horizontally scrollable table; last menu items unreachable; translated text truncated. (Roblox: a popup cut off inside a frame or `ScrollingFrame`.)
+**Hunt:** shape — absolute menus/tooltips inside an ancestor with `overflow(-x|-y)?:\s*(hidden|auto|scroll|clip)` or `contain: paint` (a `hidden`/`auto`/`scroll` axis turns the other's `visible` into `auto`: `overflow-x: auto` clips vertically too); a fixed `height` with `overflow: hidden` around text; Roblox popups under a `ClipsDescendants` frame or any `ScrollingFrame` (always clips). Function/assumption — other popups in cards, tables or scroll areas.
+**Verify:** is the popup's containing block (nearest positioned or transformed ancestor) the clipper or inside it? Probe without scrolling: `elementFromPoint` at the last item's center returns it; for text, `scrollHeight > clientHeight`. (Roblox: `AbsolutePosition` + `AbsoluteSize` inside the clipper's.)
+**Guard:** a portal to the document root or the top layer (`position: fixed` fails under a `transform`, `filter`/`backdrop-filter`, `perspective`, `will-change`, `contain` or `container-type` ancestor); `min-height`, not `height`; a test asserting `toBeInViewport({ ratio: 1 })` on the last item before any click (`toBeVisible()` and `click()` are not proof); in Roblox, popups in their own ScreenGui.
+
+### flash-of-wrong-state
+**Assumption:** the first frame the user sees is already the right state.
+**Looks like:** a flash of the logged-out header, the light theme in dark mode, unstyled content or an empty state; an animation starting from the wrong place. (Roblox: a panel shown empty, or at its end pose for a frame before its tween starts.)
+**Hunt:** shape — `useEffect` (runs after paint) setting state or a class the first render depends on; theme/auth read from `localStorage` after mount; `transition: all`; Roblox UI made visible before a yield (`task.wait`, `WaitForChild`, a remote call) fills it in, or before its pre-tween `Position`/`Transparency` is set. Function/assumption — other places that render a default and correct it a frame later.
+**Verify:** is the first painted state different from the settled state? Probe: log class changes with `performance.now()` from page start (`addInitScript` + `MutationObserver`), exact where a capture can drop a frame. (Roblox: log `GetPropertyChangedSignal` with `os.clock()`.)
+**Guard:** set the state before first paint: on the server, or from an inline `<head>` script or a cookie (`useLayoutEffect` only helps client-rendered apps); transitions on named properties; a test on that log failing on an intermediate state; in Roblox, set properties before `Parent`.
+
+### hydration-mismatch
+**Assumption:** the server render and the first client render produce the same markup.
+**Looks like:** "Hydration failed …" or minified React #418/#423/#425; Vue "Hydration … mismatch"; Svelte `hydration_mismatch`; Angular NG0500–NG0507; a date or ID changing right after load.
+**Hunt:** shape — render-time `new Date()`, `Math.random()`, `randomUUID()`, `toLocaleString`/`Intl` without a fixed locale and `timeZone`; `typeof window`/`localStorage`/`navigator` in server-rendered components; nesting the parser rewrites (`<div>` in `<p>`, `<a>` in `<a>`, `<tr>` in `<table>` without `<tbody>`); `suppressHydrationWarning` added to silence it. Function/assumption — other render-time reads of time, randomness, locale or browser-only state.
+**Verify:** is the value read during render (not in an effect or handler) and different on server and client? Does it reproduce in a clean browser profile? If not, an extension edits the DOM: not a code bug (`suppressHydrationWarning` on `<html>`/`<body>` is the accepted fix). Probe: diff the server HTML (`curl`) against the hydrated DOM.
+**Guard:** compute time/random/locale on the server and pass it down (`useId` for IDs); browser-only values after mount behind a same-size placeholder; a test failing on hydration messages in console errors, warnings or page errors (`console` and `pageerror`); review every `suppressHydrationWarning`.
+
+### responsive-breakpoint
+**Assumption:** a layout checked at one screen size works at all of them, and CSS and JS agree on the breakpoints.
+**Looks like:** fine on desktop, broken on a phone or at 125% zoom; both menus or neither at the breakpoint; a horizontal scrollbar; fine on Mac, broken on Windows. (Roblox: fine in Studio, off-screen on phones.)
+**Hunt:** shape — `max-width: 768px` beside `min-width: 768px` (both match at 768) or `max-width: 767px` (a gap at fractional widths, e.g. zoom); JS breakpoints with other numbers, or measured with `clientWidth`/`$(window).width()`, which leave out the scrollbar media queries count; fixed `px` container widths; `100vh`; Roblox Offset-only `Size`/`Position` on top-level frames, UI ignoring `ScreenInsets`. Function/assumption — every copy of the breakpoint number.
+**Verify:** is this copy the same breakpoint with the same meaning, and do the numbers overlap or leave a gap? Decide from the numbers: integer test viewports miss fractional gaps and headless Chromium hides scrollbars. Probe each width: one layout variant shows and `scrollWidth <= clientWidth`. (Roblox: Studio's device emulator.)
+**Guard:** one breakpoint shared by CSS and JS (`matchMedia` with the same query); range syntax (`width < 48rem` / `width >= 48rem`); `100dvh`/`100svh`; a viewport-matrix test asserting no horizontal overflow; in Roblox, Scale sizing with `UIAspectRatioConstraint`.
 
 ---
 

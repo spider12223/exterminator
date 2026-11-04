@@ -1,6 +1,6 @@
 ---
 name: exterminator
-description: Fixes bugs at the root cause instead of patching the symptom, then hunts down every other place the same bug lives in the codebase. Use this whenever the user reports a bug, error, crash, exception, stack trace, traceback, failing or red test, regression, or wrong output, or says something is broken, not working, or used to work, even if they only paste an error message, and especially in vibe-coded or AI-generated projects. It reproduces the bug first, traces the real cause, finds and verifies sibling bugs, fixes the shared source, adds a regression test, refuses to cheat by weakening tests or swallowing errors, and explains the cause in plain language. Not for typo fixes, formatting, lint-only cleanup, renames, copy or text edits, or dependency upgrades that are not fixing a failure.
+description: Fixes bugs at the root cause instead of patching the symptom, then hunts down every other place the same bug lives in the codebase. Use this whenever the user reports a bug, error, crash, exception, stack trace, traceback, failing or red test, regression, wrong output, or visual glitch (flicker, a layout jump, overlapping or cut-off elements, a broken animation, a UI that looks wrong), or says something is broken, not working, or used to work, even if they only paste an error message, and especially in vibe-coded or AI-generated projects. It reproduces the bug first (recording visual ones), traces the real cause, finds and verifies sibling bugs, fixes the shared source, adds a regression test, refuses to cheat by weakening tests or swallowing errors, and explains the cause in plain language. Not for typo fixes, formatting, lint-only cleanup, renames, copy or text edits, restyling or new animations when nothing is broken, or dependency upgrades that are not fixing a failure.
 ---
 
 # Exterminator
@@ -40,7 +40,7 @@ Copy this checklist into your working notes and tick it off as you go. It keeps 
 ```
 Exterminator:
 - [ ] 1. Checked the bug log
-- [ ] 2. Reproduced (failing test / script / exact steps) — or stopped and reported
+- [ ] 2. Reproduced (failing test / script / exact steps / bugcam capture) — or stopped and reported
 - [ ] 3. Localized with hypotheses (bisected if it used to work)
 - [ ] 4. Cause chain: symptom → proximate → root, each link with evidence
 - [ ] 5. Named the bug class
@@ -53,7 +53,7 @@ Exterminator:
 - [ ] 12. Logged the pattern
 ```
 
-Scripts referenced below live in this skill's `scripts/` folder (paths are relative to the skill's base directory). They use only the Python 3 standard library; on Windows call `python` instead of `python3`.
+Scripts referenced below live in this skill's `scripts/` folder (paths are relative to the skill's base directory). They use only the Python 3 standard library, except `bugcam.py` (see [Visual bugs](#visual-bugs)); on Windows call `python` instead of `python3`.
 
 ### 1. Check the bug log
 
@@ -73,6 +73,8 @@ Don't edit code until you've watched the bug happen. Without a repro you can't t
 - If you genuinely can't reproduce it, **stop**. Report what you tried, what you saw, and what information would help (exact input, environment, logs). Don't change code on a guess. Temporary diagnostic logging is fine; remove it before you finish.
 
 Intermittent bugs: run the repro in a loop, record seeds/timings, and see `references/debugging.md#flaky-and-timing-bugs`.
+
+Visual bugs (a glitch, flicker, layout jump, "it looks wrong"): you can't see the screen, so record it with `bugcam record`. See [Visual bugs](#visual-bugs).
 
 ### 3. Localize with hypotheses
 
@@ -166,11 +168,11 @@ Fixed: where and how
 Same bug elsewhere: N found → X fixed · Y need your OK · Z checked, not a bug
   - path:line — fixed / needs your OK / not a bug (why) — one-line note
 Prevention: the regression test, plus any class guard added
-Verified by: the repro command and test name(s), and the audit result
+Verified by: the repro command and test name(s), and the audit result (visual bugs: plus bugcam compare's line)
 Lesson: one sentence worth remembering
 ```
 
-Add "Also noticed:" for out-of-scope issues, and "Couldn't verify:" for suspected siblings. For T0, one line is enough.
+Add "Also noticed:" for out-of-scope issues, and "Couldn't verify:" for suspected siblings. For T0, one line is enough. For a visual bug, paste the `Verified by:` line that `bugcam compare` prints into "Verified by".
 
 Example:
 
@@ -202,6 +204,26 @@ python3 scripts/bug_log.py add --cls missing-await --lang js \
 
 Record the **search command**, not just the result — the next session reruns it to catch new copies before they ship.
 
+## Visual bugs
+
+When the bug is something the user *sees* — a glitch, flicker, a layout jump, a broken animation, overlapping or cut-off elements, "it looks wrong" — you need to see it too. That goes for web pages, canvas/WebGL games, desktop apps, and Roblox (screen capture of Studio, or a recording the user drops in). `scripts/bugcam.py` records a few seconds and turns them into a short text timeline and one contact sheet.
+
+1. **Record the repro (step 2).** Run it from the project root; captures land in `.claude/bugcam/`.
+   ```bash
+   python3 scripts/bugcam.py record web --serve web --scenario .claude/bugcam/buy-jump.json --watch "#buy"
+   python3 scripts/bugcam.py record screen --window "My Game" --duration 5
+   python3 scripts/bugcam.py record frames bug.mp4
+   ```
+   - **web**: a page you can drive. Write a scenario JSON in `.claude/bugcam/` (goto, click, wait…) and watch the element that misbehaves. Static files: `--serve DIR`; a running dev server: `--url http://localhost:3000/`.
+   - **screen**: a game or desktop app, by `--window` title or `--region=X,Y,W,H`. Never the whole desktop unless the user asks.
+   - **frames**: a video, GIF or screenshots the user gave you.
+2. **Read `timeline.md` first**: what changed when, flickers, layout shifts, watched elements' positions, console errors. Then `sheet.png`. Crop only if you need a closer look (the timeline ends with a ready crop command). Never open `frames/` or `bugcam.gif` (you only see a GIF's first frame).
+3. **Prove the fix.** Record the same scenario again, then `python3 scripts/bugcam.py compare <before_dir> <after_dir>`. Its `Verified by:` line goes in the report's "Verified by". A capture is evidence, not a regression test: step 9 still applies.
+
+One sheet costs about 1.5k image tokens at the default standard tier; a whole record → fix → compare loop is 3–5k. bugcam needs Pillow, plus Playwright for web and ffmpeg for screen and video. If one is missing it exits 3 and prints the exact install command: ask the user before installing, and never install it yourself.
+
+Details — every flag, the scenario format, reading the timeline, sheet and heatmap, capture tips, Roblox, known limits: `references/visual-debugging.md`.
+
 ## When to stop and report instead of fixing
 
 - You can't reproduce the bug.
@@ -219,6 +241,7 @@ Load only what the current bug needs.
 - `references/bug-classes.md` — cross-stack catalog: each class's broken assumption, how to hunt it, how to verify, and the class guard
 - `references/debugging.md` — repro shrinking, hypothesis loop, targeted logging, bisecting, flaky/timing bugs, writing the cause chain
 - `references/verifying-variants.md` — candidate verification checklist and false-positive traps
+- `references/visual-debugging.md` — bugcam: recording visual bugs, scenario format, reading timelines and sheets, cost rules, capture tips
 - `references/js-ts.md` — JavaScript, TypeScript, React, Next.js
 - `references/python.md` — Python
 - `references/luau.md` — Luau / Roblox
@@ -227,3 +250,4 @@ Load only what the current bug needs.
 - `scripts/audit_fix.py` — anti-cheat self-audit of your diff (`--help`)
 - `scripts/bug_log.py` — read/append `.claude/bug-patterns.md` (`--help`)
 - `scripts/bisect_repro.py` — wrapper for `git bisect run` (`--help`)
+- `scripts/bugcam.py` — camera for visual bugs: record, crop, compare, doctor (needs Pillow; `--help`)
