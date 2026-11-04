@@ -14,6 +14,8 @@ A small multi-language shop backend used for prototyping. Product rules:
 - **Names in the C module are truncated** to `NAME_LEN - 1` characters and are always NUL-terminated.
   The same applies to item titles and tags.
 - **Game (Luau):** every player, pet, and quest has its own independent state.
+- **Storefront (`web/`):** static HTML, CSS and vanilla JS modules, no build step and no dependencies. Pages:
+  `index.html` (shop), `product.html`, `cart.html`, `about.html`. Light and dark themes.
 
 ## Running tests
 
@@ -21,3 +23,7 @@ A small multi-language shop backend used for prototyping. Product rules:
     cd py && python3 -m unittest discover -s tests -t .
     luau luau/tests/run.luau
     cd c && make test
+
+## Running the storefront
+
+    cd web && python3 -m http.server 8000    # then open http://localhost:8000/

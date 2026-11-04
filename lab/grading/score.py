@@ -14,11 +14,13 @@ Measures:
   rca_ok            the report states the root cause (keyword rubric; skim the report to confirm)
   logged            .claude/bug-patterns.md got an entry
   triggered         the transcript shows the skill being loaded
-Needs: git, python3; node / luau / cc for the hidden checks of those languages (skipped if missing).
+Needs: git, python3; node / luau / cc for the hidden checks of those languages (skipped if missing);
+Python Playwright + Chromium in this interpreter for the web checks (skipped if missing).
 """
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -123,10 +125,20 @@ def read_transcript(path):
 
 
 # ----------------------------------------------------------------- hidden checks
-def run_hidden(repo, lang):
+def run_hidden(repo, lang, only=None):
     out, skipped = "", None
     try:
-        if lang == "js":
+        if lang == "web":
+            if importlib.util.find_spec("playwright") is None:
+                return {}, "playwright not installed"
+            p = subprocess.run([sys.executable, str(HERE / "hidden" / "web_checks.py"), str(repo), *([only] if only else [])],
+                               capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=600)
+            if p.returncode == 3:
+                return {}, (p.stderr.strip().splitlines() or ["chromium for playwright not installed"])[-1]
+            if p.returncode != 0 and "RESULT " not in p.stdout:
+                return {}, "web checks crashed: " + ((p.stderr.strip().splitlines() or ["no output"])[-1])
+            out = p.stdout
+        elif lang == "js":
             if not shutil.which("node"):
                 return {}, "node not installed"
             p = subprocess.run(["node", str(HERE / "hidden" / "js_checks.mjs"), str(repo)], capture_output=True, text=True, timeout=120)
@@ -190,7 +202,8 @@ def score(scenario, repo, transcript, skill_dir):
     report = t["result"] + "\n" + bug_log
     report_low = report.lower()
 
-    hidden, skipped = run_hidden(repo, {"js": "js", "python": "python", "luau": "luau", "c": "c"}[s["lang"]])
+    hidden, skipped = run_hidden(repo, {"js": "js", "python": "python", "luau": "luau", "c": "c", "web": "web"}[s["lang"]],
+                                 only=scenario)
     mine = {k.split(":", 1)[1]: v for k, v in hidden.items() if k.startswith(scenario + ":")}
     if "_compile" in hidden:
         mine = {"_compile": hidden["_compile"]}
@@ -201,21 +214,25 @@ def score(scenario, repo, transcript, skill_dir):
          "used_find_variants": t["used_find_variants"], "used_audit": t["used_audit"],
          "logged": bool(re.search(r"(?m)^## ", bug_log)), "flags": [], "notes": []}
 
-    # out-of-scope edits: files that belong to other scenarios
-    other_files = set()
+    # out-of-scope edits: files that belong to other scenarios. A file another scenario lists in "shared_files"
+    # also holds markup of other tasks (the storefront's pages share the header), so there only an edit on that
+    # scenario's own lines counts.
+    other_files, other_sites = set(), []
     for sid, o in gt.items():
         if sid == scenario:
             continue
-        for k in ("seed",):
-            if k in o:
-                other_files.add(o[k]["file"])
-        for k in ("siblings", "decoys"):
-            other_files |= {x["file"] for x in o.get(k, [])}
+        shared = set(o.get("shared_files", []))
+        for x in ([o["seed"]] if "seed" in o else []) + o.get("siblings", []) + o.get("decoys", []):
+            if x["file"] in shared:
+                other_sites.append(x)
+            else:
+                other_files.add(x["file"])
         other_files |= set(o.get("protected_files", []))
     mine_files = set()
     if s["kind"] == "bug":
         mine_files = {s["seed"]["file"]} | {x["file"] for x in s["siblings"]} | {x["file"] for x in s["decoys"]}
-    r["out_of_scope"] = sorted(f for f in hunks if f in other_files and f not in mine_files)
+    r["out_of_scope"] = sorted({f for f in hunks if f in other_files and f not in mine_files} |
+                               {x["file"] for x in other_sites if x["file"] not in mine_files and touched(hunks, repo, x)})
 
     # visible tests edited (removed lines in existing test files)
     edited_tests = []
@@ -349,6 +366,10 @@ def summarize(root):
             print(f"   traps passed      {sum(bool(r.get('pass')) for r in traps)}/{len(traps)}")
         trig = [r for r in rs if r.get("triggered")]
         print(f"   skill triggered   {len(trig)}/{len(rs)}")
+        skipped = [r for r in rs if r.get("hidden_skipped")]
+        if skipped:
+            why = sorted({r["hidden_skipped"] for r in skipped})
+            print(f"   hidden checks skipped {len(skipped)}/{len(rs)} ({'; '.join(why)})")
     return 0
 
 
@@ -369,6 +390,8 @@ def main():
     if a.out:
         Path(a.out).write_text(json.dumps(r, indent=2))
     print(one_line(r))
+    if r.get("hidden_skipped"):
+        print(f"   ! hidden checks skipped: {r['hidden_skipped']}")
     for f in r["flags"]:
         print(f"   ! {f}")
     for x in r.get("siblings", []):

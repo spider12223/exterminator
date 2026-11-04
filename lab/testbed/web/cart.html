@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" class="theme-light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShopKit - Cart</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/cart.css">
+  <link rel="stylesheet" href="css/summary.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ShopKit</a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Shop</a>
+      <a href="about.html">About</a>
+      <a href="cart.html" aria-current="page">Cart (3)</a>
+    </nav>
+    <button type="button" id="theme-toggle" class="header-button" aria-label="Switch between light and dark theme">Theme</button>
+    <div class="account">
+      <button type="button" id="account-button" class="header-button" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu">Account</button>
+      <ul id="account-menu" class="menu" role="menu" hidden>
+        <li role="none"><a role="menuitem" href="#orders">Orders</a></li>
+        <li role="none"><a role="menuitem" href="#addresses">Addresses</a></li>
+        <li role="none"><a role="menuitem" href="#settings">Settings</a></li>
+        <li role="none"><a role="menuitem" href="#sign-out">Sign out</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="cart-layout">
+    <h1>Your cart</h1>
+    <ul id="cart-items" class="cart-items"></ul>
+
+    <section class="summary" aria-label="Order summary">
+      <div class="summary-table-wrap">
+        <table class="summary-table">
+          <tr>
+            <th scope="row">
+              Shipping
+              <span class="help">
+                <button type="button" id="shipping-help" class="help-button" aria-describedby="shipping-tip">?</button>
+                <span class="tip" id="shipping-tip" role="tooltip">Free on orders over $50. Otherwise a flat $4.90, delivered in 2 to 4 working days.</span>
+              </span>
+            </th>
+            <td id="shipping"></td>
+          </tr>
+          <tr>
+            <th scope="row">Subtotal</th>
+            <td id="subtotal"></td>
+          </tr>
+          <tr class="total">
+            <th scope="row">Total</th>
+            <td id="total"></td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <button type="button" id="checkout" class="button primary">Checkout</button>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/cart.js"></script>
+</body>
+</html>

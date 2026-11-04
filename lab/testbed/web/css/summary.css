@@ -1,0 +1,74 @@
+.summary {
+  margin: 0 0 20px;
+  padding: 16px 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.summary-table-wrap {
+  overflow-x: auto; /* long coupon codes scroll sideways on small phones */
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.summary-table th {
+  padding: 6px 0;
+  font-weight: 400;
+  text-align: left;
+}
+
+.summary-table td {
+  padding: 6px 0;
+  text-align: right;
+}
+
+.summary-table .total th,
+.summary-table .total td {
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.help {
+  position: relative;
+  display: inline-block;
+}
+
+.help-button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  cursor: help;
+}
+
+.tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: -12px;
+  z-index: 10;
+  width: 240px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 14px;
+  line-height: 20px;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.help:hover .tip,
+.help:focus-within .tip {
+  visibility: visible;
+  opacity: 1;
+}

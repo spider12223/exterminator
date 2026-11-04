@@ -1,0 +1,33 @@
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  width: 320px;
+  padding: 24px;
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  box-shadow: -12px 0 32px rgb(0 0 0 / 0.16);
+  transition: transform 0.25s ease, visibility 0.25s;
+}
+
+.drawer.is-closed {
+  transform: translateX(100%);
+  visibility: hidden;
+}
+
+.drawer.is-open {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+.drawer h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+}
+
+.drawer label {
+  display: block;
+  margin-bottom: 10px;
+}

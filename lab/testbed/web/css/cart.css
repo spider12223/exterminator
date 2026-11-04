@@ -1,0 +1,38 @@
+.cart-layout {
+  max-width: 640px;
+}
+
+.cart-items {
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  gap: 16px;
+  align-items: start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.cart-thumb {
+  display: block;
+  width: 160px;
+  border-radius: 10px;
+}
+
+.cart-info h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.cart-info p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.cart-price {
+  font-weight: 700;
+}

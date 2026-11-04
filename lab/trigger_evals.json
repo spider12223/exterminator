@@ -9,6 +9,8 @@
   {"query": "ModuleNotFoundError: No module named 'fastapi_auth_utils' when I start the server. claude added that import in the last session and now nothing runs, can you get it working again", "should_trigger": true},
   {"query": "dark mode toggle is broken — it flips back to light every time I reload the page. pretty sure it worked before I moved the settings into a context provider", "should_trigger": true},
   {"query": "our nightly sync job reports success but half the orders never reach the warehouse system. no errors anywhere in the logs. sync code is jobs/warehouse_sync.js", "should_trigger": true},
+  {"query": "on my landing page the headline and the shop now button jump down like half a second after load when the hero image pops in. lighthouse says CLS 0.38. it's plain html/css in site/", "should_trigger": true},
+  {"query": "the inventory gui in my roblox game flickers every time i switch tabs, for a split second you see an empty frame before the new tab shows up. the LocalScript is StarterGui/InventoryUI/TabController", "should_trigger": true},
   {"query": "fix the typo in the README, it says 'recieve' in like three places and 'seperate' once", "should_trigger": false},
   {"query": "can you fix the formatting in utils.py? the indentation is all over the place and black keeps complaining about line length", "should_trigger": false},
   {"query": "clean up the eslint warnings about unused imports and unused vars in src/components, nothing is actually broken just noisy", "should_trigger": false},
@@ -18,5 +20,7 @@
   {"query": "explain what a race condition actually is with a simple javascript example, I keep hearing the term in code reviews", "should_trigger": false},
   {"query": "write unit tests for src/cart.ts, there aren't any yet and I want coverage before I refactor it", "should_trigger": false},
   {"query": "add a loading spinner to the checkout button while the payment request is in flight, and disable the button so people can't double click", "should_trigger": false},
-  {"query": "review this PR diff for code quality before I merge it — nothing is failing, I just want a second pair of eyes on naming and structure", "should_trigger": false}
+  {"query": "review this PR diff for code quality before I merge it — nothing is failing, I just want a second pair of eyes on naming and structure", "should_trigger": false},
+  {"query": "make the buy button on the product page bigger and green, and give it a little hover effect", "should_trigger": false},
+  {"query": "add a fade-in animation to the cart drawer when it opens, something smooth like 200ms", "should_trigger": false}
 ]

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import importlib.util
 import json
 import os
 import shutil
@@ -84,6 +85,13 @@ def main():
     configs = [] if a.no_skill_runs else ["with_skill"]
     if a.baseline or a.no_skill_runs:
         configs.append("without_skill")
+    gt = json.loads((LAB / "grading" / "ground_truth.json").read_text())
+    web = [k for k in tasks if gt.get(k, {}).get("lang") == "web"]
+    if web and importlib.util.find_spec("playwright") is None:
+        # the scorer runs the web checks with this interpreter, so they'd all be skipped and scored as not fixed
+        print(f"warning: {sys.executable} has no Playwright, so the hidden checks of {', '.join(web)} will be skipped.\n"
+              f"  Install it: {sys.executable} -m pip install playwright && {sys.executable} -m playwright install chromium\n"
+              f"  or leave those tasks out with --tasks.", file=sys.stderr)
 
     stamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
     batch = Path(a.out) / stamp

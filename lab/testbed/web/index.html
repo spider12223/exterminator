@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" class="theme-light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShopKit - Shoes</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/toolbar.css">
+  <link rel="stylesheet" href="css/catalog.css">
+  <link rel="stylesheet" href="css/cards.css">
+  <link rel="stylesheet" href="css/drawer.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ShopKit</a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html" aria-current="page">Shop</a>
+      <a href="about.html">About</a>
+      <a href="cart.html">Cart (3)</a>
+    </nav>
+    <button type="button" id="theme-toggle" class="header-button" aria-label="Switch between light and dark theme">Theme</button>
+    <div class="account">
+      <button type="button" id="account-button" class="header-button" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu">Account</button>
+      <ul id="account-menu" class="menu" role="menu" hidden>
+        <li role="none"><a role="menuitem" href="#orders">Orders</a></li>
+        <li role="none"><a role="menuitem" href="#addresses">Addresses</a></li>
+        <li role="none"><a role="menuitem" href="#settings">Settings</a></li>
+        <li role="none"><a role="menuitem" href="#sign-out">Sign out</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <h1>Shoes</h1>
+
+    <div class="toolbar">
+      <span class="result-count">6 products</span>
+      <div class="view-switch" role="group" aria-label="Layout">
+        <button type="button" id="view-grid" data-view="grid" aria-pressed="true">Grid</button>
+        <button type="button" id="view-list" data-view="list" aria-pressed="false">List</button>
+      </div>
+      <button type="button" id="filters-button" aria-expanded="false" aria-controls="filters">Filters</button>
+      <div class="sort">
+        <button type="button" id="sort-button" aria-haspopup="listbox" aria-expanded="false" aria-controls="sort-menu">Sort: Featured</button>
+        <ul id="sort-menu" class="sort-menu" role="listbox" aria-label="Sort products" hidden>
+          <li role="option" data-sort="featured" aria-selected="true">Featured</li>
+          <li role="option" data-sort="price-asc" aria-selected="false">Price: low to high</li>
+          <li role="option" data-sort="price-desc" aria-selected="false">Price: high to low</li>
+          <li role="option" data-sort="name" aria-selected="false">Name</li>
+        </ul>
+      </div>
+    </div>
+
+    <ul id="product-grid" class="product-grid" data-view="grid">
+      <li class="card" data-rank="1" data-price="89" data-name="Trail Runner">
+        <a class="card-link" href="product.html">
+          <div class="zoom-frame"><img src="img/trail-runner.svg" alt="Trail Runner"></div>
+          <h3 class="card-title">Trail Runner</h3>
+          <p class="card-price">$89</p>
+        </a>
+      </li>
+      <li class="card" data-rank="2" data-price="120" data-name="City Loafer">
+        <a class="card-link" href="product.html">
+          <div class="zoom-frame"><img src="img/city-loafer.svg" alt="City Loafer"></div>
+          <h3 class="card-title">City Loafer</h3>
+          <p class="card-price">$120</p>
+        </a>
+      </li>
+      <li class="card" data-rank="3" data-price="59" data-name="Canvas High">
+        <a class="card-link" href="product.html">
+          <div class="zoom-frame"><img src="img/canvas-high.svg" alt="Canvas High"></div>
+          <h3 class="card-title">Canvas High</h3>
+          <p class="card-price">$59</p>
+        </a>
+      </li>
+      <li class="card" data-rank="4" data-price="75" data-name="Rain Boot">
+        <a class="card-link" href="product.html">
+          <div class="zoom-frame"><img src="img/rain-boot.svg" alt="Rain Boot"></div>
+          <h3 class="card-title">Rain Boot</h3>
+          <p class="card-price">$75</p>
+        </a>
+      </li>
+      <li class="card" data-rank="5" data-price="95" data-name="Court Classic">
+        <a class="card-link" href="product.html">
+          <div class="zoom-frame"><img src="img/court-classic.svg" alt="Court Classic"></div>
+          <h3 class="card-title">Court Classic</h3>
+          <p class="card-price">$95</p>
+        </a>
+      </li>
+      <li class="card" data-rank="6" data-price="69" data-name="Sock Runner">
+        <a class="card-link" href="product.html">
+          <div class="zoom-frame"><img src="img/sock-runner.svg" alt="Sock Runner"></div>
+          <h3 class="card-title">Sock Runner</h3>
+          <p class="card-price">$69</p>
+        </a>
+      </li>
+    </ul>
+  </main>
+
+  <aside id="filters" class="drawer is-closed" aria-label="Filters">
+    <h2>Filters</h2>
+    <label><input type="checkbox" name="waterproof"> Waterproof</label>
+    <label><input type="checkbox" name="vegan"> Vegan materials</label>
+    <label><input type="checkbox" name="sale"> On sale</label>
+    <button type="button" class="button primary" data-close>Show results</button>
+  </aside>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/home.js"></script>
+</body>
+</html>

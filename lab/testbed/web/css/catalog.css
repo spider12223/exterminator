@@ -1,0 +1,35 @@
+.product-grid {
+  margin: 0;
+  padding: 0;
+}
+
+.product-grid[data-view="grid"] {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.product-grid[data-view="list"] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-grid[data-view="list"] .card-link {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  column-gap: 16px;
+}
+
+.product-grid[data-view="list"] .zoom-frame {
+  grid-row: span 2;
+}
+
+.product-grid[data-view="list"] .card-title {
+  align-self: end;
+  margin-top: 0;
+}
+
+.product-grid[data-view="list"] .card-price {
+  align-self: start;
+}

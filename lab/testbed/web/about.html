@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" class="theme-light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShopKit - About us</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/header.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ShopKit</a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Shop</a>
+      <a href="about.html" aria-current="page">About</a>
+      <a href="cart.html">Cart (3)</a>
+    </nav>
+    <button type="button" id="theme-toggle" class="header-button" aria-label="Switch between light and dark theme">Theme</button>
+    <div class="account">
+      <button type="button" id="account-button" class="header-button" aria-haspopup="menu" aria-expanded="false" aria-controls="account-menu">Account</button>
+      <ul id="account-menu" class="menu" role="menu" hidden>
+        <li role="none"><a role="menuitem" href="#orders">Orders</a></li>
+        <li role="none"><a role="menuitem" href="#addresses">Addresses</a></li>
+        <li role="none"><a role="menuitem" href="#settings">Settings</a></li>
+        <li role="none"><a role="menuitem" href="#sign-out">Sign out</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <h1>About ShopKit</h1>
+    <img src="img/workshop.svg" alt="Our workshop in Porto" width="800" height="400" class="about-photo">
+    <p>We are a small team in Porto making comfortable everyday shoes. Every pair is checked by hand before it ships.</p>
+
+    <form class="newsletter" action="#" onsubmit="return false">
+      <label for="email">Get new drops by email</label>
+      <input id="email" type="email" placeholder="you@example.com">
+      <button type="submit" id="newsletter-button" class="button primary">Subscribe</button>
+    </form>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+  <script type="module">
+    import { showToast } from "./js/toast.js";
+
+    showToast("Free returns within 30 days on every pair", { delay: 700 });
+  </script>
+</body>
+</html>
